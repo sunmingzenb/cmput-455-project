@@ -35,25 +35,12 @@ class Go0(GoEngine):
 
     def solve(self, board, timer):
         start_time = time.time()
-        result = 'unknown'
-
-        while True:
-            elapsed_time = time.time() - start_time
-            if elapsed_time >= timer:
-                return 'unknown'
-
-            result = self.run_solver(board,)
-
-
-            if result is not None:
-                break
-        return result
-    def run_solver(self, board: GoBoard):
-
         board = board.copy()
         # try:
-        best_val, best_move = alphabeta(board, -10000, 10000, 20)
-        if best_val == 0:
+        best_val, best_move = alphabeta(board, -10000, 10000, 20,timer,start_time)
+        if best_val is None:
+            return 'unknown', ''
+        elif best_val == 0:
             if best_move is not None:
                 winner = 'draw'
                 return winner, best_move
@@ -71,7 +58,6 @@ class Go0(GoEngine):
                 return winner, ''
             else:
                 return 'unknown', ''
-
 
 def handler():
     raise TimeoutError()

@@ -148,6 +148,7 @@ class GoBoard(object):
         self.white_captures = 0
         self.moves=[]
         self.captures=[]
+        self.transposition_table = {}
 
     def copy(self) -> 'GoBoard':
         b = GoBoard(self.size)

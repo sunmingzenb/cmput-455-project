@@ -336,7 +336,6 @@ class GtpConnection:
             
             color = color_to_int(board_color)
             if not self.board.play_move(move, color):
-                # self.respond("Illegal Move: {}".format(board_move))
                 self.respond('illegal move: "{} {}" occupied'.format(board_color, board_move))
                 return
             else:
@@ -366,18 +365,14 @@ class GtpConnection:
         """
         Modify this function for Assignment 2.
         """
-        
+
         color = color_to_int(args[0].lower())
         opponent_color = opponent(color)
 
         result, suggested_move = self.go_engine.solve(self.board, self.time)
-        
-        if result == 'unknown' or color_to_int(result) == opponent_color:
-            # if self.board.get_captures(opponent_result) >= 10 or self.board.detect_five_in_a_row() == opponent_result:
-            #     self.respond("resign")
-            #     return
-            # move = self.go_engine.get_move(self.board, color)
-
+        if result == 'draw' or color_to_int(result) == color:
+            move = suggested_move
+        elif result == 'unknown' or color_to_int(result) == opponent_color:
             legal_moves = self.board.get_empty_points()
             if not legal_moves.size:
                 self.respond("pass")
@@ -385,10 +380,10 @@ class GtpConnection:
 
             rng = np.random.default_rng()
             move = legal_moves[rng.choice(len(legal_moves))]
-        else:
-            move = suggested_move
+
         move_as_string = format_point(point_to_coord(int(move), self.board.size))
         self.respond(move_as_string)
+        #self.play_cmd([color, move_as_string, 'print_move'])
         return
     
     def timelimit_cmd(self, args: List[str]) -> None:
@@ -488,10 +483,14 @@ def color_to_int(c: str) -> int:
     return color_to_int[c]
 
 
-def alphabeta(board, alpha, beta, depth):
+def alphabeta(board, alpha, beta, depth,time_limit,start_time):
     """
     Alpha beta algorithm
     """
+    curr_time = time.time()
+    elapsed_time = curr_time - start_time
+    if elapsed_time >= time_limit:
+        return (None, None)
     if board.end_of_game() or depth == 0:
         return board.statisticallyEvaluatePlay(), None
     order = board.ordering_move()
@@ -500,7 +499,9 @@ def alphabeta(board, alpha, beta, depth):
         return (0, best_move)
     for m in order:
         board.play_move(m,board.current_player)
-        value = alphabeta(board, -beta, -alpha, depth -1)[0]
+        value = alphabeta(board, -beta, -alpha, depth -1,time_limit, start_time)[0]
+        if value is None:
+            return (None, None)
         value = -value
         if value > alpha:
             alpha = value
