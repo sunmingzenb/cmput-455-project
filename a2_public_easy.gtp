@@ -61,6 +61,7 @@ timelimit 1
 #?[w]
 
 clear_board
+boardsize 5
 play b c2
 play w e4
 play b c1
@@ -86,6 +87,7 @@ timelimit 1
 #?[a5]
 
 clear_board
+boardsize 5
 play b c3
 play w c2
 play b d4

@@ -365,34 +365,32 @@ class GtpConnection:
         """
         Modify this function for Assignment 2.
         """
-        board_color = args[0].lower()
-        color = color_to_int(board_color)
-        result1 = self.board.detect_five_in_a_row()
-        result2 = EMPTY
+        
+        color = color_to_int(args[0].lower())
+        opponent_color = opponent(color)
 
+        result, suggested_move = self.go_engine.solve(self.board, self.time)
+        
+        if result == 'unknown' or color_to_int(result) == opponent_color:
+            # if self.board.get_captures(opponent_result) >= 10 or self.board.detect_five_in_a_row() == opponent_result:
+            #     self.respond("resign")
+            #     return
+            # move = self.go_engine.get_move(self.board, color)
 
+            legal_moves = self.board.get_empty_points()
+            if not legal_moves.size:
+                self.respond("pass")
+                return
 
-        # WRITE GENMOVE CODE
-        # self.respond(self.go_engine.solve(self.board, self.time)[1])
-
-
-
-        if self.board.get_captures(opponent(color)) >= 10:
-            result2 = opponent(color)
-        if result1 == opponent(color) or result2 == opponent(color):
-            self.respond("resign")
-            return
-        legal_moves = self.board.get_empty_points()
-        if legal_moves.size == 0:
-            self.respond("pass")
-            return
-        rng = np.random.default_rng()
-        choice = rng.choice(len(legal_moves))
-        move = legal_moves[choice]
-        move_coord = point_to_coord(move, self.board.size)
-        move_as_string = format_point(move_coord)
-        self.play_cmd([board_color, move_as_string, 'print_move'])
-
+            rng = np.random.default_rng()
+            move = legal_moves[rng.choice(len(legal_moves))]
+        else:
+            move = suggested_move
+        print("move is : ", move)
+        move_as_string = format_point(point_to_coord(int(move), self.board.size))
+        self.respond(move_as_string)
+        #self.play_cmd([color, move_as_string, 'print_move'])
+    
     def timelimit_cmd(self, args: List[str]) -> None:
 
         try:
@@ -438,7 +436,7 @@ def format_point(move: Tuple[int, int]) -> str:
     Return move coordinates as a string such as 'A1', or 'PASS'.
     """
     assert MAXSIZE <= 25
-    column_letters = "ABCDEFGHJKLMNOPQRSTUVWXYZ"
+    column_letters = "abcdefghijklmnopqrstuvwxyz"
     if move[0] == PASS:
         return "PASS"
     row, col = move
@@ -510,8 +508,6 @@ def alphabeta(state, alpha, beta, depth):
        
         if value >= beta: 
             return (beta, moveToPlay)
-    if moveToPlay:
-        print('second', alpha, format_point(point_to_coord(31, state.size)), format_point(point_to_coord(10, state.size)), format_point(point_to_coord(11, state.size)))
     return (alpha, moveToPlay)
 
 
