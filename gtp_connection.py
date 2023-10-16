@@ -482,8 +482,8 @@ def color_to_int(c: str) -> int:
     return color_to_int[c]
 
 
-def alphabeta(state, alpha, beta):
-    if state.end_of_game():
+def alphabeta(state, alpha, beta, depth):
+    if state.end_of_game() or depth == 0:
         evaluate = (state.statisticallyEvaluatePlay(), None)
 
         return evaluate
@@ -501,7 +501,7 @@ def alphabeta(state, alpha, beta):
     for m in temp:
     
         state.play_move(m,state.current_player)
-        value = alphabeta(state, -beta, -alpha)[0]
+        value = alphabeta(state, -beta, -alpha, depth -1)[0]
         value = -value
         if value > alpha:
             alpha = value

@@ -38,7 +38,7 @@ class Go0(GoEngine):
 
         state = board.copy()
         # try:
-        best_val, best_move = alphabeta(state, -10000, 10000)
+        best_val, best_move = alphabeta(state, -10000, 10000, 20)
         print('-------', best_val, best_move)
         if best_val == 0:
             if best_move is not None:

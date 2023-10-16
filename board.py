@@ -12,6 +12,7 @@ The board uses a 1-dimensional representation with padding
 """
 
 import numpy as np
+import hashlib
 from typing import List, Tuple
 #123
 from board_base import (
@@ -54,8 +55,7 @@ class GoBoard(object):
         self.white_captures = 0
         self.moves= []
         self.captures= []
-        self.win_player= 0
-        self.w_moves= ""
+        self.transposition_table = {}
         
 
     def add_two_captures(self, color: GO_COLOR) -> None:
@@ -148,8 +148,6 @@ class GoBoard(object):
         self.white_captures = 0
         self.moves=[]
         self.captures=[]
-        self.win_player=0
-        self.w_moves= ""
 
     def copy(self) -> 'GoBoard':
         b = GoBoard(self.size)
@@ -316,6 +314,9 @@ class GoBoard(object):
                 single_capture = nb_point
         return single_capture
 
+    def hash_board(self) -> str:
+        return hashlib.md5(self.board.tostring()).hexdigest()
+
     def play_move(self, point: GO_POINT, color: GO_COLOR) -> bool:
         """
         Tries to play a move of color on the point.
@@ -327,7 +328,11 @@ class GoBoard(object):
         self.board[point] = color
         self.moves.append(point)
         self.current_player = opponent(color)
-
+        board_hash = self.hash_board()
+        if board_hash in self.transposition_table:
+            # Handle repetition (e.g., return False or take appropriate action)
+            return False
+        self.transposition_table[board_hash] = True
         offsets = [1, -1, self.NS, -self.NS, self.NS + 1, -(self.NS + 1), self.NS - 1, -self.NS + 1]
         for offset in offsets:
             if self.board[point + offset] == opponent(color) and self.board[point + (offset * 2)] == opponent(color) and \
@@ -417,8 +422,13 @@ class GoBoard(object):
         else:
             opp_color = WHITE
         if len(self.moves) > 0:
-            current_move = self.moves.pop()  # something i put in the class variable
-            self.board[current_move] = EMPTY  # makes current place empty
+            current_move = self.moves.pop()  # something I put in the class variable
+            self.board[current_move] = EMPTY  # makes the current place empty
+
+            # Remove the current board state from the transposition table
+            board_hash = self.hash_board()
+            if board_hash in self.transposition_table:
+                del self.transposition_table[board_hash] # makes current place empty
         else:
             return
         if len(self.captures) != 0:  # something was captured
