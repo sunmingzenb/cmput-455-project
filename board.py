@@ -455,7 +455,6 @@ class GoBoard(object):
 
     def statisticallyEvaluatePlay(self):
         win_color = self.winner()
-        #print(win_color,self.current_player)
         assert win_color != self.current_player
         
         if win_color == EMPTY:
@@ -465,18 +464,18 @@ class GoBoard(object):
 
     def heuristic_function(self):
         current_player = self.current_player
-        opp = opponent(current_player)
+        opp_player = opponent(current_player)
 
         # Initialize the value with a baseline score
         value = 0
 
         # Count the number of stones for the current player and the opponent
         curr_stones = len([p for p in self.board if p == current_player])
-        opp_stones = len([p for p in self.board if p == opp])
+        opp_stones = len([p for p in self.board if p == opp_player])
 
         # Consider capturing stones as a factor
         curr_captures = self.get_captures(current_player)
-        opp_captures = self.get_captures(opp)
+        opp_captures = self.get_captures(opp_player)
 
         # Consider the difference in captures as a factor
         captures_score = curr_captures - opp_captures

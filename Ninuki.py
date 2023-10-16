@@ -53,7 +53,6 @@ class Go0(GoEngine):
         board = board.copy()
         # try:
         best_val, best_move = alphabeta(board, -10000, 10000, 20)
-        print('-------', best_val, best_move)
         if best_val == 0:
             if best_move is not None:
                 winner = 'draw'

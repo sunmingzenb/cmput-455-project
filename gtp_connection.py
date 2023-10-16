@@ -8,6 +8,7 @@ Parts of this code were originally based on the gtp module
 in the Deep-Go project by Isaac Henrion and Amos Storkey 
 at the University of Edinburgh.
 """
+import time
 import traceback
 import numpy as np
 import re
@@ -386,13 +387,20 @@ class GtpConnection:
             move = legal_moves[rng.choice(len(legal_moves))]
         else:
             move = suggested_move
-        print("move is : ", move)
         move_as_string = format_point(point_to_coord(int(move), self.board.size))
         self.respond(move_as_string)
-        #self.play_cmd([color, move_as_string, 'print_move'])
+        return
     
     def timelimit_cmd(self, args: List[str]) -> None:
+        """Implement a GTP command
+timelimit seconds
+The argument seconds is an integer in the range 1 <= seconds <= 100. This command sets the maximum time to use for all following genmove or solve commands, until it is changed by another timelimit command.
+Before the first timelimit command is given, the default should be set to 1 second. The public test cases show examples.
 
+"""
+        if len(args) != 1:
+            self.error("Timelimit command requires exactly one argument.")
+            return
         try:
             seconds = int(args[0])
             if 1 <= seconds <= 100:
@@ -481,22 +489,16 @@ def color_to_int(c: str) -> int:
 
 
 def alphabeta(board, alpha, beta, depth):
+    """
+    Alpha beta algorithm
+    """
     if board.end_of_game() or depth == 0:
-        evaluate = (board.statisticallyEvaluatePlay(), None)
-
-        return evaluate
-
+        return board.statisticallyEvaluatePlay(), None
     order = board.ordering_move()
+    best_move = order[0]
     if len(order) == 1:
-        best_move = order[0]
         return (0, best_move)
-    if len(order ) > 0:
-        best_move = order[0]
-    else:
-        best_move = None
-
     for m in order:
-
         board.play_move(m,board.current_player)
         value = alphabeta(board, -beta, -alpha, depth -1)[0]
         value = -value
