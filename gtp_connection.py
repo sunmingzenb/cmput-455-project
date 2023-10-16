@@ -367,52 +367,52 @@ class GtpConnection:
         """
         board_color = args[0].lower()
         color = color_to_int(board_color)
-        opponent_result = opponent(color)
+        result1 = self.board.detect_five_in_a_row()
+        result2 = EMPTY
 
-        game_solved, suggested_move = self.go_engine.solve(self.board, self.time)
 
-        if game_solved == 'unknown':
-            if self.board.get_captures(opponent_result) >= 10 or self.board.detect_five_in_a_row() == opponent_result:
-                self.respond("resign")
-                return
 
-            legal_moves = self.board.get_empty_points()
-            if not legal_moves.size:
-                self.respond("pass")
-                return
+        # WRITE GENMOVE CODE
+        # self.respond(self.go_engine.solve(self.board, self.time)[1])
 
-            rng = np.random.default_rng()
-            move = legal_moves[rng.choice(len(legal_moves))]
-        else:
-            move = suggested_move
 
-        move_as_string = format_point(point_to_coord(move, self.board.size))
+
+        if self.board.get_captures(opponent(color)) >= 10:
+            result2 = opponent(color)
+        if result1 == opponent(color) or result2 == opponent(color):
+            self.respond("resign")
+            return
+        legal_moves = self.board.get_empty_points()
+        if legal_moves.size == 0:
+            self.respond("pass")
+            return
+        rng = np.random.default_rng()
+        choice = rng.choice(len(legal_moves))
+        move = legal_moves[choice]
+        move_coord = point_to_coord(move, self.board.size)
+        move_as_string = format_point(move_coord)
         self.play_cmd([board_color, move_as_string, 'print_move'])
-    
+
     def timelimit_cmd(self, args: List[str]) -> None:
-        
-        if args[0].lstrip('-').isdigit():            
-            arg = int(args[0])
-            if arg:
-                if arg <= 100 and arg >= 1:
-                    self.time = arg
-                else:
-                    print('Time must be within bounds [1, 100]')
+
+        try:
+            seconds = int(args[0])
+            if 1 <= seconds <= 100:
+                self.time = seconds
+                self.respond()
             else:
-                print('{} is and invalid time limit'.format(arg))
-        else:
-            print("Argument must be a number")
-            
-        self.respond()
-        
+                self.error("Time limit must be in the range 1 to 100 seconds.")
+        except ValueError:
+            self.error("Invalid time limit value. Use an integer between 1 and 100.")
+
 
     def solve_cmd(self, args: List[str]) -> None:
-        
-        value, moveToPlay = self.go_engine.solve(self.board, self.time)
-        if moveToPlay:
-            self.respond("{} {}".format(value, format_point(point_to_coord(moveToPlay, self.board.size)).lower()))
+
+        winner,move = self.go_engine.solve(self.board, self.time)
+        if move:
+            print(winner , format_point(point_to_coord(move, self.board.size)).lower())
         else:
-            self.respond("{}".format(value))
+            print(winner)
 
     """
     ==========================================================================
@@ -422,7 +422,7 @@ class GtpConnection:
 
 def point_to_coord(point: GO_POINT, boardsize: int) -> Tuple[int, int]:
     """
-    Transform point given as board array index 
+    Transform point given as board array index
     to (row, col) coordinate representation.
     Special case: PASS is transformed to (PASS,PASS)
     """
@@ -481,14 +481,9 @@ def color_to_int(c: str) -> int:
     color_to_int = {"b": BLACK, "w": WHITE, "e": EMPTY, "BORDER": BORDER}
     return color_to_int[c]
 
-    
+
 def alphabeta(state, alpha, beta):
     if state.end_of_game():
-        state.win_player = state.detect_five_in_a_row()
-
-        point = point_to_coord(state.moves[-1], state.size)
-        point = format_point(point)
-        state.w_moves = point
         evaluate = (state.statisticallyEvaluatePlay(), None)
 
         return evaluate

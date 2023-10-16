@@ -14,7 +14,7 @@ from board_base import DEFAULT_SIZE, GO_POINT, GO_COLOR, BLACK, WHITE, opponent
 from board import GoBoard
 from board_util import GoBoardUtil
 from engine import GoEngine
-from gtp_connection import  alphabeta
+from gtp_connection import alphabeta
 import signal
 
 
@@ -28,33 +28,41 @@ class Go0(GoEngine):
         GoEngine.__init__(self, "Go0", 1.0)
 
     def get_move(self, board: GoBoard, color: GO_COLOR) -> GO_POINT:
-        return GoBoardUtil.generate_random_move(board, color, 
+        return GoBoardUtil.generate_random_move(board, color,
                                                 use_eye_filter=False)
-    
+
     def solve(self, board: GoBoard, timer):
-       
+
         # signal.signal(signal.SIGALRM, handler())
         # signal.alarm(timer)
-        
-        bo = board.copy()
+
+        state = board.copy()
         # try:
-        value, moveToPlay = alphabeta(bo, -10, 10)
-        print('-------', value, moveToPlay)        
-        if value > 0:
-            return 'b', moveToPlay
-        elif value == 0:
-            return 'draw', moveToPlay
-        else:
-            return 'w', None
-        # except TimeoutError:
-        #     return 'unknown', None
-        # finally:
-        #     signal.alarm(0)
-        
-       
+        best_val, best_move = alphabeta(state, -10000, 10000)
+        print('-------', best_val, best_move)
+        if best_val == 0:
+            if best_move is not None:
+                winner = 'draw'
+                return winner, best_move
+            else:
+                return 'unknown', ''
+        elif best_val > 0:
+            if best_move is not None:
+                winner = 'b'
+                return winner, best_move
+            else:
+                return 'unknown', ''
+        elif best_val < 0:
+            if best_move is not None:
+                winner = 'w'
+                return winner, ''
+            else:
+                return 'unknown', ''
+
 
 def handler():
     raise TimeoutError()
+
 
 def run() -> None:
     """
