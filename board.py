@@ -325,12 +325,12 @@ class GoBoard(object):
         """
         if self.board[point] != EMPTY:
             return False
-        temp = []
+        capture = []
         self.board[point] = color
         self.moves.append(point)
         self.current_player = opponent(color)
         board_hash = self.hash_board()
-        move_number = len(self.moves)  # Get the current move number
+        move_number = len(self.moves)
         if board_hash in self.transposition_table:
             if self.transposition_table[board_hash] >= move_number:
                 # Handle repetition (e.g., return False or take appropriate action)
@@ -347,9 +347,9 @@ class GoBoard(object):
                 else:
                     self.white_captures += 2
 
-                temp.append(point + offset)
-                temp.append(point + (offset * 2))
-        self.captures.append(temp)
+                capture.append(point + offset)
+                capture.append(point + (offset * 2))
+        self.captures.append(capture)
         return True
     
     def neighbors_of_color(self, point: GO_POINT, color: GO_COLOR) -> List:
@@ -425,18 +425,16 @@ class GoBoard(object):
         else:
             opp_color = WHITE
         if len(self.moves) > 0:
-            current_move = self.moves.pop()  # something I put in the class variable
-            self.board[current_move] = EMPTY  # makes the current place empty
-
-            # Remove the current board state from the transposition table
+            current_move = self.moves.pop()
+            self.board[current_move] = EMPTY
             board_hash = self.hash_board()
             if board_hash in self.transposition_table:
                 del self.transposition_table[board_hash]
         else:
             return
-        if len(self.captures) != 0:  # something was captured
+        if len(self.captures) != 0:
             places_where_captures = self.captures.pop()
-            if self.current_player == WHITE:  # black captured white
+            if self.current_player == WHITE:
                 self.black_captures = self.black_captures - len(
                     places_where_captures)
             else:
@@ -466,11 +464,8 @@ class GoBoard(object):
     def heuristic_function(self):
         current_player = self.current_player
         opp_player = opponent(current_player)
-
-        # Initialize the value with a baseline score
         value = 0
 
-        # Count the number of stones for the current player and the opponent
         curr_stones = len([p for p in self.board if p == current_player])
         opp_stones = len([p for p in self.board if p == opp_player])
 
