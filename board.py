@@ -435,19 +435,15 @@ class GoBoard(object):
 
         return
     def winner(self):
-        if self.detect_five_in_a_row()==BLACK:
+        if self.detect_five_in_a_row()==BLACK or self.black_captures>=10:
             return BLACK
-        elif self.detect_five_in_a_row() == WHITE:
-            return WHITE
-        elif self.black_captures>=10:
-            return BLACK
-        elif self.white_captures>=10:
+        elif self.detect_five_in_a_row() == WHITE or self.white_captures>=10:
             return WHITE
         return EMPTY
 
     def statisticallyEvaluatePlay(self):
         win_color = self.winner()
-        print(win_color,self.current_player)
+        #print(win_color,self.current_player)
         assert win_color != self.current_player
         
         if win_color == EMPTY:
