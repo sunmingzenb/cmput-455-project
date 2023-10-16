@@ -9,13 +9,15 @@ Written by Cmput 455 TA and Martin Mueller
 Used signal timer based off this reference:
 https://stackoverflow.com/questions/14920384/stop-code-after-time-period
 """
+import time
+
 from gtp_connection import GtpConnection
 from board_base import DEFAULT_SIZE, GO_POINT, GO_COLOR, BLACK, WHITE, opponent
 from board import GoBoard
 from board_util import GoBoardUtil
 from engine import GoEngine
 from gtp_connection import alphabeta
-import signal
+
 
 
 class Go0(GoEngine):
@@ -31,14 +33,26 @@ class Go0(GoEngine):
         return GoBoardUtil.generate_random_move(board, color,
                                                 use_eye_filter=False)
 
-    def solve(self, board: GoBoard, timer):
+    def solve(self, board, timer):
+        start_time = time.time()
+        result = 'unknown'
 
-        # signal.signal(signal.SIGALRM, handler())
-        # signal.alarm(timer)
+        while True:
+            elapsed_time = time.time() - start_time
+            if elapsed_time >= timer:
+                return 'unknown'
 
-        state = board.copy()
+            result = self.run_solver(board,)
+
+
+            if result is not None:
+                break
+        return result
+    def run_solver(self, board: GoBoard):
+
+        board = board.copy()
         # try:
-        best_val, best_move = alphabeta(state, -10000, 10000, 20)
+        best_val, best_move = alphabeta(board, -10000, 10000, 20)
         print('-------', best_val, best_move)
         if best_val == 0:
             if best_move is not None:

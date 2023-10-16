@@ -480,34 +480,33 @@ def color_to_int(c: str) -> int:
     return color_to_int[c]
 
 
-def alphabeta(state, alpha, beta, depth):
-    if state.end_of_game() or depth == 0:
-        evaluate = (state.statisticallyEvaluatePlay(), None)
+def alphabeta(board, alpha, beta, depth):
+    if board.end_of_game() or depth == 0:
+        evaluate = (board.statisticallyEvaluatePlay(), None)
 
         return evaluate
 
-    #temp = state.get_empty_points()
-    temp = state.orderScores()
-    if len(temp) == 1:
-        moveToPlay = temp[0]
-        return (0, moveToPlay)
-    elif len(temp) > 0:
-        moveToPlay = temp[0]
+    order = board.ordering_move()
+    if len(order) == 1:
+        best_move = order[0]
+        return (0, best_move)
+    if len(order ) > 0:
+        best_move = order[0]
     else:
-        moveToPlay = None
-        
-    for m in temp:
-    
-        state.play_move(m,state.current_player)
-        value = alphabeta(state, -beta, -alpha, depth -1)[0]
+        best_move = None
+
+    for m in order:
+
+        board.play_move(m,board.current_player)
+        value = alphabeta(board, -beta, -alpha, depth -1)[0]
         value = -value
         if value > alpha:
             alpha = value
-            moveToPlay = m
-        state.undo()
-       
-        if value >= beta: 
-            return (beta, moveToPlay)
-    return (alpha, moveToPlay)
+            best_move = m
+        board.undo()
+
+        if value >= beta:
+            return (beta, best_move)
+    return (alpha, best_move)
 
 

@@ -329,10 +329,12 @@ class GoBoard(object):
         self.moves.append(point)
         self.current_player = opponent(color)
         board_hash = self.hash_board()
+        move_number = len(self.moves)  # Get the current move number
         if board_hash in self.transposition_table:
-            # Handle repetition (e.g., return False or take appropriate action)
-            return False
-        self.transposition_table[board_hash] = True
+            if self.transposition_table[board_hash] >= move_number:
+                # Handle repetition (e.g., return False or take appropriate action)
+                return False
+        self.transposition_table[board_hash] = move_number
         offsets = [1, -1, self.NS, -self.NS, self.NS + 1, -(self.NS + 1), self.NS - 1, -self.NS + 1]
         for offset in offsets:
             if self.board[point + offset] == opponent(color) and self.board[point + (offset * 2)] == opponent(color) and \
@@ -428,7 +430,7 @@ class GoBoard(object):
             # Remove the current board state from the transposition table
             board_hash = self.hash_board()
             if board_hash in self.transposition_table:
-                del self.transposition_table[board_hash] # makes current place empty
+                del self.transposition_table[board_hash]
         else:
             return
         if len(self.captures) != 0:  # something was captured
@@ -487,7 +489,7 @@ class GoBoard(object):
 
         return value
 
-    def orderScores(self):
+    def ordering_move(self):
         empty_points = self.get_empty_points()
 
         scores = {}
